@@ -1,0 +1,9 @@
+{
+    "name": "notbadtech/notbadtech",
+    "description": "PHP version of notbadtech site",
+    "require": {
+        "php": "^8.2",
+        "ext-mysqli": "*",
+        "ext-pdo": "*"
+    }
+}
