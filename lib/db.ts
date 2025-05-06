@@ -10,13 +10,14 @@ const db = mysql({
   },
 });
 
-export default async function executeQuery({ query, values }: { query: string; values?: any[] }) {
+export default async function executeQuery({ query, values }: { query: string; values?: unknown[] }) {
   try {
     const results = await db.query(query, values);
     await db.end();
     return results;
   } catch (error) {
     console.error("Database error:", error);
+    await db.end();
     throw error;
   }
 }

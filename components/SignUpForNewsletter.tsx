@@ -1,7 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { parsePhoneNumberFromString, getCountryCallingCode } from "libphonenumber-js";
+import { parsePhoneNumberFromString, CountryCode } from "libphonenumber-js";
+
+// Define Choices.js types
+interface Choices {
+  setChoiceByValue(value: string): void;
+  destroy(): void;
+}
+
+interface ChoicesConstructor {
+  new (element: string | Element, options: { searchEnabled: boolean; searchChoices: boolean; itemSelectText: string; shouldSort: boolean }): Choices;
+}
+
+declare global {
+  interface Window {
+    Choices: ChoicesConstructor;
+  }
+}
 
 const countries = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -35,7 +51,7 @@ const usStates = [
 ];
 
 // Map country names to ISO 3166-1 alpha-2 codes for libphonenumber-js
-const countryCodeMap: { [key: string]: string } = {
+const countryCodeMap: { [key: string]: CountryCode } = {
   "United States": "US",
   "United Kingdom": "GB",
   "Canada": "CA",
@@ -44,11 +60,10 @@ const countryCodeMap: { [key: string]: string } = {
   "France": "FR",
   "India": "IN",
   // Add more mappings as needed for other countries
-  // Fallback to 'US' for unmapped countries
 };
 
 // Function to detect OS and browser from user-agent
-const getUserAgentInfo = () => {
+const getUserAgentInfo = (): { operating_system: string; browser: string } => {
   const ua = navigator.userAgent;
   let os = "Unknown";
   let browser = "Unknown";
@@ -91,14 +106,14 @@ export default function SignUpForNewsLetter() {
   const [geolocationAvailable, setGeolocationAvailable] = useState(true);
 
   useEffect(() => {
-    let countrySelect: any = null;
-    let stateSelect: any = null;
+    let countrySelect: Choices | null = null;
+    let stateSelect: Choices | null = null;
 
     // Initialize Choices.js for dropdowns
-    const initChoices = (selector: string) => {
-      if (typeof window !== "undefined" && (window as any).Choices) {
+    const initChoices = (selector: string): Choices | null => {
+      if (typeof window !== "undefined" && window.Choices) {
         try {
-          const select = new (window as any).Choices(selector, {
+          const select = new window.Choices(selector, {
             searchEnabled: true,
             searchChoices: true,
             itemSelectText: "",
@@ -214,16 +229,16 @@ export default function SignUpForNewsLetter() {
     };
   }, [formData.country, geolocationAvailable]);
 
-  const validateEmail = (email: string) => {
+  const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const validatePhone = (phone: string, country: string) => {
+  const validatePhone = (phone: string, country: string): boolean => {
     if (!phone || !country) return false;
-    const countryCode = countryCodeMap[country] || "US"; // Fallback to US
+    const countryCode = countryCodeMap[country] || "US";
     try {
-      const phoneNumber = parsePhoneNumberFromString(phone, countryCode as any);
+      const phoneNumber = parsePhoneNumberFromString(phone, countryCode);
       return phoneNumber ? phoneNumber.isValid() : false;
     } catch (error) {
       console.error("Phone validation error:", error);
@@ -231,11 +246,11 @@ export default function SignUpForNewsLetter() {
     }
   };
 
-  const formatPhone = (phone: string, country: string) => {
+  const formatPhone = (phone: string, country: string): string => {
     if (!phone || !country) return phone;
     const countryCode = countryCodeMap[country] || "US";
     try {
-      const phoneNumber = parsePhoneNumberFromString(phone, countryCode as any);
+      const phoneNumber = parsePhoneNumberFromString(phone, countryCode);
       return phoneNumber ? phoneNumber.formatInternational() : phone;
     } catch (error) {
       console.error("Phone formatting error:", error);
