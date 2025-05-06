@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorDiv = document.getElementById('form-error');
     const successModal = document.getElementById('success-modal');
     const closeModalButton = document.getElementById('close-modal');
+    const youtubeModal = document.getElementById('youtube-modal');
+    const closeYouTubeModalButton = document.getElementById('close-youtube-modal');
+    const copyUrlButton = document.getElementById('copy-url');
     const emailInput = document.getElementById('email');
     const phoneInput = document.getElementById('phone');
     const countrySelect = document.getElementById('country');
@@ -27,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
         state: null,
         zip: null
     };
+
+    // Get YouTube URL from modal link
+    const youtubeUrl = document.querySelector('#youtube-modal a').href;
 
     // Country code mapping for libphonenumber-js
     const countryCodeMap = {
@@ -271,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestGeolocation();
     });
 
-    // Close modal
+    // Close success modal
     closeModalButton.addEventListener('click', () => {
         successModal.classList.add('hidden');
         // Reset form
@@ -282,6 +288,23 @@ document.addEventListener('DOMContentLoaded', () => {
         stateContainer.classList.add('hidden');
         stateSelect.required = false;
         errorDiv.classList.add('hidden');
+    });
+
+    // Close YouTube modal
+    closeYouTubeModalButton.addEventListener('click', () => {
+        youtubeModal.classList.add('hidden');
+    });
+
+    // Copy URL to clipboard
+    copyUrlButton.addEventListener('click', () => {
+        navigator.clipboard.writeText(youtubeUrl)
+            .then(() => {
+                copyUrlButton.classList.add('text-green-500');
+                setTimeout(() => copyUrlButton.classList.remove('text-green-500'), 2000);
+            })
+            .catch(err => {
+                console.error('Failed to copy URL:', err);
+            });
     });
 
     // Signup form submission
@@ -335,8 +358,11 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         console.log('YouTube link clicked');
 
-        // Open YouTube in a new tab immediately
-        const youtubeWindow = window.open('https://www.youtube.com/@JavascriptMastery', '_blank');
+        // Show YouTube modal
+        youtubeModal.classList.remove('hidden');
+
+        // Attempt to open YouTube in a new tab
+        const youtubeWindow = window.open(youtubeUrl, '_blank');
         if (!youtubeWindow) {
             console.error('Failed to open YouTube window');
         }

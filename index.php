@@ -1,5 +1,17 @@
 <?php
 require_once 'src/db.php';
+
+$conn = getDbConnection();
+$settings = $conn->query("SELECT * FROM settings WHERE id = 1")->fetch_assoc();
+$conn->close();
+
+$youtube_url = htmlspecialchars($settings['youtube_url']);
+$signup_button_color = htmlspecialchars($settings['signup_button_color']);
+$background_color_start = htmlspecialchars($settings['background_color_start']);
+$background_color_end = htmlspecialchars($settings['background_color_end']);
+$page_title = htmlspecialchars($settings['page_title']);
+$paragraph_text = htmlspecialchars($settings['paragraph_text']);
+$site_title = htmlspecialchars($settings['site_title']);
 ?>
 
 <!DOCTYPE html>
@@ -7,19 +19,48 @@ require_once 'src/db.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>(not)badtech - Launching Soon</title>
+    <title><?php echo $page_title; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js/bundle/libphonenumber-js.min.js" defer></script>
     <script src="js/form.js" defer></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, <?php echo $background_color_start; ?>, <?php echo $background_color_end; ?>) !important;
+        }
+        #signup-form button[type="submit"] {
+            background-color: <?php echo $signup_button_color; ?> !important;
+        }
+        #signup-form button[type="submit"]:hover {
+            background-color: <?php echo darkenColor($signup_button_color, 10); ?> !important;
+        }
+        #retry-geolocation {
+            background-color: <?php echo $signup_button_color; ?> !important;
+        }
+        #retry-geolocation:hover {
+            background-color: <?php echo darkenColor($signup_button_color, 10); ?> !important;
+        }
+        #success-modal button {
+            background-color: <?php echo $signup_button_color; ?> !important;
+        }
+        #success-modal button:hover {
+            background-color: <?php echo darkenColor($signup_button_color, 10); ?> !important;
+        }
+        #youtube-modal button {
+            background-color: <?php echo $signup_button_color; ?> !important;
+        }
+        #youtube-modal button:hover {
+            background-color: <?php echo darkenColor($signup_button_color, 10); ?> !important;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-[#1e3c72] to-[#2a5298] text-white min-h-screen flex items-center justify-center p-5">
+<body class="text-white min-h-screen flex items-center justify-center p-5">
     <div class="max-w-2xl w-full text-center bg-white/95 text-gray-800 rounded-3xl p-10 shadow-xl mx-auto my-10">
-        <h1 class="text-4xl text-[#1e3c72] mb-5 font-bold">(not)badtech</h1>
+        <h1 class="text-4xl text-[#1e3c72] mb-5 font-bold"><?php echo $site_title; ?></h1>
         <p class="text-lg leading-relaxed mb-8 text-gray-600">
-            We're reinventing technology for everyday people by listening to your feedback and refining products to be truly user-friendly. Our launch is coming soon – stay in the loop!
+            <?php echo $paragraph_text; ?>
         </p>
 
         <!-- Signup Form -->
@@ -70,7 +111,7 @@ require_once 'src/db.php';
             <div class="text-left">
                 <label for="country" class="block text-sm font-bold text-gray-800 mb-1">Country</label>
                 <select id="country" name="country" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2a5298]">
-                    <option value="" disabled selected>Select your country</option>
+                    <option value="" sàng disabled selected>Select your country</option>
                     <?php
                     $countries = [
                         "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -105,7 +146,7 @@ require_once 'src/db.php';
             <input type="hidden" id="operating_system" name="operating_system">
             <input type="hidden" id="browser" name="browser">
             <input type="hidden" id="timezone" name="timezone">
-            <button type="submit" class="w-full bg-[#2a5298] text-white p-4 rounded-lg font-semibold hover:bg-[#1e3c72] transition-colors">
+            <button type="submit" class="w-full text-white p-4 rounded-lg font-semibold transition-colors">
                 Sign Up
             </button>
         </form>
@@ -115,14 +156,32 @@ require_once 'src/db.php';
             <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transform transition-all scale-0 animate-scale-in">
                 <h2 class="text-2xl font-bold text-[#1e3c72] mb-4 text-center">Thank you. We'll be in touch!</h2>
                 <p class="text-gray-600 text-center mb-6">We're excited to keep you updated on our launch. Stay tuned!</p>
-                <button id="close-modal" class="w-full bg-[#2a5298] text-white p-3 rounded-lg font-semibold hover:bg-[#1e3c72] transition-colors">Close</button>
+                <button id="close-modal" class="w-full text-white p-3 rounded-lg font-semibold transition-colors">Close</button>
+            </div>
+        </div>
+
+        <!-- YouTube Modal -->
+        <div id="youtube-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transform transition-all scale-0 animate-scale-in">
+                <h2 class="text-2xl font-bold text-[#1e3c72] mb-4 text-center">Thank you for supporting my channel!</h2>
+                <p class="text-gray-600 text-center mb-6">
+                    If the channel does not open automatically, please click this URL:
+                    <br>
+                    <a href="<?php echo $youtube_url; ?>" target="_blank" class="text-[#2a5298] hover:text-[#1e3c72] underline inline-flex items-center">
+                        <?php echo $youtube_url; ?>
+                        <svg id="copy-url" class="w-5 h-5 ml-2 cursor-pointer text-gray-600 hover:text-[#2a5298]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </a>
+                </p>
+                <button id="close-youtube-modal" class="w-full text-white p-3 rounded-lg font-semibold transition-colors">Close</button>
             </div>
         </div>
 
         <!-- Geolocation Retry Button (Hidden by Default) -->
         <div id="geolocation-retry" class="text-center mt-4 hidden">
             <p class="text-red-600 text-sm mb-2">Geolocation permission denied. Please allow location access to auto-fill fields.</p>
-            <button id="retry-geolocation" class="bg-[#2a5298] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#1e3c72] transition-colors">
+            <button id="retry-geolocation" class="text-white px-4 py-2 rounded-lg font-semibold transition-colors">
                 Retry Geolocation
             </button>
         </div>
@@ -137,3 +196,15 @@ require_once 'src/db.php';
     </div>
 </body>
 </html>
+
+<?php
+// Helper function to darken a hex color
+function darkenColor($hex, $percent) {
+    $hex = ltrim($hex, '#');
+    $rgb = array_map('hexdec', str_split($hex, 2));
+    $rgb = array_map(function($c) use ($percent) {
+        return max(0, round($c * (100 - $percent) / 100));
+    }, $rgb);
+    return '#' . sprintf("%02x%02x%02x", $rgb[0], $rgb[1], $rgb[2]);
+}
+?>
