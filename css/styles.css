@@ -1,0 +1,49 @@
+/* Load Tailwind CSS utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animation for pulsing red border */
+@keyframes pulse-red {
+    0%, 100% {
+        border-color: rgb(239, 68, 68);
+    }
+    50% {
+        border-color: rgb(255, 153, 153);
+    }
+}
+
+.animate-pulse-red {
+    animation: pulse-red 1.5s ease-in-out infinite;
+}
+
+/* Custom animation for modal scale-in */
+@keyframes scale-in {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-scale-in {
+    animation: scale-in 0.3s ease-out forwards;
+}
+
+/* Utility class for hiding elements (e.g., state dropdown, modal) */
+.hidden {
+    display: none;
+}
+
+/* Ensure form inputs and selects inherit Tailwind styles */
+input, select {
+    @apply border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:border-[#2a5298];
+}
+
+/* Adjust body for full-page gradient */
+body {
+    @apply bg-gradient-to-br from-[#1e3c72] to-[#2a5298] text-white min-h-screen flex items-center justify-center p-5;
+}
